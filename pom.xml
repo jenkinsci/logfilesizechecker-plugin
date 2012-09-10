@@ -12,6 +12,7 @@
     <name>Jenkins build log file size checker plugin</name>
     <description>Aborts a build if its log file gets too big</description>
     <version>1.0</version>
+    <url>http://wiki.jenkins-ci.org/display/JENKINS/Logfilesizechecker+Plugin</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -23,15 +24,18 @@
             <id>stefanbrausch</id>
             <name>Stefan Brausch</name>
             <email>stefan.brausch@1und1.de</email>
-            <timezone>+1</timezone>
         </developer>
         <developer>
             <id>kstutz</id>
             <name>Kathi Stutz</name>
             <email>logfilesizechecker@kathistutz.de</email>
-            <timezone>+1</timezone>
         </developer>
     </developers>
+    <scm>
+        <connection>scm:git:ssh://github.com/jenkinsci/logfilesizechecker-plugin.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/jenkinsci/logfilesizechecker-plugin.git</developerConnection>
+        <url>https://github.com/jenkinsci/logfilesizechecker-plugin</url>
+    </scm>
     <build>
         <plugins>
             <plugin>
