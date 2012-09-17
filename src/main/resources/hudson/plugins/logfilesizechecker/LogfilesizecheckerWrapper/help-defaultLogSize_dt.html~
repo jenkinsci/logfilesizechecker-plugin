@@ -1,5 +1,0 @@
-<div>
-  Wenn die Logdatei eines Builds die hier angegebene Dateigr&ouml;&szlig;e (in MB) &uuml;bersteigt,
-  wird der Build automatisch abgebrochen. Diese Standard-Einstellung kann in den
-  Konfigurationen der einzelnen Jobs &uuml;berschrieben werden.
-</div>

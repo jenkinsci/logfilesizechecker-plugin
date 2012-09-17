@@ -155,7 +155,6 @@ public class LogfilesizecheckerWrapper extends BuildWrapper {
          */
         public String getDisplayName() {
             return Messages.Descriptor_DisplayName();
-//            return "Abort the build if its log file size is too big";
         }
 
         /**Certainly does something.

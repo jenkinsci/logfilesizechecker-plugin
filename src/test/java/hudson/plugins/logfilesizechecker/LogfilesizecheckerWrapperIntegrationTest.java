@@ -15,11 +15,11 @@ public class LogfilesizecheckerWrapperIntegrationTest extends HudsonTestCase {
     public void test1() throws Exception {
         //maxLogSize=1MB, failBuild=true, setOwn=true 
         final FreeStyleProject project = (FreeStyleProject) hudson.getItem("1");
+        System.out.println(project.getName());
         project.getBuildWrappersList().add(new LogfilesizecheckerWrapper(1, true, true));
 
         final FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println("LogFileLength: " + build.getLogFile().length());
-        
         assertBuildStatus(Result.FAILURE, build);
     }
     
@@ -75,12 +75,12 @@ public class LogfilesizecheckerWrapperIntegrationTest extends HudsonTestCase {
     
     //configuration round trip test
     public void testConfigRoundTrip() throws Exception {
-        final FreeStyleProject p = createFreeStyleProject();
+        final FreeStyleProject project = createFreeStyleProject();
         final LogfilesizecheckerWrapper before = new LogfilesizecheckerWrapper(3, true, true);
-        p.getBuildWrappersList().add(before);
+        project.getBuildWrappersList().add(before);
         
         submit(new WebClient().goTo("configure").getFormByName("config"));
-        final LogfilesizecheckerWrapper after = p.getBuildWrappersList().get(LogfilesizecheckerWrapper.class);
+        final LogfilesizecheckerWrapper after = project.getBuildWrappersList().get(LogfilesizecheckerWrapper.class);
 
         assertEqualDataBoundBeans(before, after);
     }
