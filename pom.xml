@@ -36,6 +36,10 @@
         <developerConnection>scm:git:ssh://git@github.com/jenkinsci/logfilesizechecker-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/logfilesizechecker-plugin</url>
     </scm>
+	<issueManagement>
+		<system>JIRA</system>
+		<url>https://issues.jenkins-ci.org/browse/JENKINS/component/16920</url>
+	</issueManagement>
     <build>
         <plugins>
             <plugin>
