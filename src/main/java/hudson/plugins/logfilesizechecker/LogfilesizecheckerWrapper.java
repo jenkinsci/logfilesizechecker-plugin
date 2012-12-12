@@ -26,7 +26,7 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class LogfilesizecheckerWrapper extends BuildWrapper {
     
-    /** Set your own max size instaed of using the default.*/
+    /** Set your own max size instead of using the default.*/
     public boolean setOwn;
 
     /** If the log file for the build has more MB, it will be terminated. */
