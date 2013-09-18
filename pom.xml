@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>1.424.6</version>
+        <version>1.509.3</version>
     </parent>
  
     <artifactId>logfilesizechecker</artifactId>
@@ -36,10 +36,10 @@
         <developerConnection>scm:git:ssh://git@github.com/jenkinsci/logfilesizechecker-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/logfilesizechecker-plugin</url>
     </scm>
-	<issueManagement>
-		<system>JIRA</system>
-		<url>https://issues.jenkins-ci.org/browse/JENKINS/component/16920</url>
-	</issueManagement>
+    <issueManagement>
+        <system>JIRA</system>
+        <url>https://issues.jenkins-ci.org/browse/JENKINS/component/16920</url>
+    </issueManagement>
     <build>
         <plugins>
             <plugin>
@@ -60,7 +60,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
-                <version>3.0</version>
+                <version>3.3</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -89,6 +89,20 @@
             </plugin>
         </plugins>
     </build>
+    <!-- get every artifact through repo.jenkins-ci.org, which proxies all the
+    artifacts that we need -->
+    <repositories>
+        <repository>
+            <id>repo.jenkins-ci.org</id>
+            <url>http://repo.jenkins-ci.org/public/</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>repo.jenkins-ci.org</id>
+            <url>http://repo.jenkins-ci.org/public/</url>
+        </pluginRepository>
+    </pluginRepositories>
     <reporting>
         <plugins>
             <plugin>
