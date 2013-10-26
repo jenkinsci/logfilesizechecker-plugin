@@ -198,22 +198,6 @@ public class LogfilesizecheckerWrapper extends BuildWrapper {
             return super.configure(req, formData);
         }
 
-        @Override
-        public BuildWrapper newInstance(StaplerRequest req, JSONObject formData)
-            throws FormException {
-            
-            final JSONObject newData = new JSONObject();
-            newData.put("failBuild", formData.getString("failBuild"));
-            
-            final JSONObject sizeObject = formData.getJSONObject("logfilesizechecker");
-            if ("setOwn".equals(sizeObject.getString("value"))) {
-                newData.put("setOwn", true);
-                newData.put("maxLogSize", sizeObject.getString("maxLogSize"));
-            } else {
-                newData.put("setOwn", false);
-            }
-            
-            return super.newInstance(req, newData);
-        }
+       
     }
 }
