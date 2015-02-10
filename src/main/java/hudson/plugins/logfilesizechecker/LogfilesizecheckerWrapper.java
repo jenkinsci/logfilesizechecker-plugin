@@ -88,7 +88,7 @@ public class LogfilesizecheckerWrapper extends BuildWrapper {
                             && build.getLogFile().length() > allowedLogSize * MB 
                             && !e.isInterrupted()) {
                         listener.getLogger().println(
-                                ">>> Max Log Size reached. Aborting <<<");
+                                ">>> Max Log Size reached "+allowedLogSize+"(MB). Aborting <<<");
                         e.interrupt(failBuild ? Result.FAILURE : Result.ABORTED);
                     }
                 }
@@ -117,7 +117,6 @@ public class LogfilesizecheckerWrapper extends BuildWrapper {
                 if (allowedLogSize > 0) {
                     logtask.cancel();
                 }
-                listener.getLogger().println("erreicht: " + build.getLogFile().length());
                 return true;
             }
         }
