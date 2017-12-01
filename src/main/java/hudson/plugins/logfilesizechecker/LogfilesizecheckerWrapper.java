@@ -1,19 +1,26 @@
 package hudson.plugins.logfilesizechecker;
 
+import hudson.EnvVars;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Executor;
 import hudson.model.Result;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.triggers.SafeTimerTask;
-import hudson.triggers.Trigger;
 
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.concurrent.TimeUnit;
+
+import jenkins.tasks.SimpleBuildWrapper;
+import jenkins.util.Timer;
+
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -24,8 +31,8 @@ import org.kohsuke.stapler.StaplerRequest;
  *
  * @author Stefan Brausch
  */
-public class LogfilesizecheckerWrapper extends BuildWrapper {
-    
+public class LogfilesizecheckerWrapper extends SimpleBuildWrapper implements Serializable {
+
     /** Set your own max size instead of using the default.*/
     public boolean setOwn;
 
@@ -58,72 +65,76 @@ public class LogfilesizecheckerWrapper extends BuildWrapper {
     }
     
     @Override
-    public Environment setUp(final AbstractBuild build, Launcher launcher,
-            final BuildListener listener) throws IOException {
-        
-        /**Environment of the BuildWrapper.*/
-        class EnvironmentImpl extends Environment {
-            private final LogSizeTimerTask logtask;
-            private final int allowedLogSize;
+    public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher,
+            TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
 
-            /**TimerTask that checks log file size in regular intervals.*/
-            final class LogSizeTimerTask extends SafeTimerTask {
-                private final AbstractBuild build;
-                private final BuildListener listener;
+        int allowedLogSize;
+        if (setOwn) {
+            allowedLogSize = maxLogSize;
+        } else {
+            allowedLogSize = DESCRIPTOR.getDefaultLogSize();
+        }
 
-                /**
-                 * Constructor for TimerTask that checks log file size.
-                 * @param build the current build
-                 * @param listener BuildListener used for logging
-                 */
-                private LogSizeTimerTask(AbstractBuild build, BuildListener listener) {
-                    this.build = build;
-                    this.listener = listener;
-                }
-                
-                /**Interrupts build if log file is too big.*/
-                public void doRun() {
-                    final Executor e = build.getExecutor();
-                    if (e != null 
-                            && build.getLogFile().length() > allowedLogSize * MB 
-                            && !e.isInterrupted()) {
-                        listener.getLogger().println(
-                                ">>> Max Log Size reached "+allowedLogSize+"(MB). Aborting <<<");
-                        e.interrupt(failBuild ? Result.FAILURE : Result.ABORTED);
-                    }
-                }
-            }
-            
-            /**
-             * Constructor for Environment of BuildWrapper
-             * Finds correct maximum log size and starts timertask
-             */
-            public EnvironmentImpl() {
-                if (setOwn) {
-                    allowedLogSize = maxLogSize;
-                } else {
-                    allowedLogSize = DESCRIPTOR.getDefaultLogSize();
-                }
-                
-                logtask = new LogSizeTimerTask(build, listener);
-                if (allowedLogSize > 0) {
-                    Trigger.timer.scheduleAtFixedRate(logtask, DELAY, PERIOD);
-                }
-            }
+        if (allowedLogSize > 0) {
+            LogSizeTimerTask logSizeTimerTask =
+                    new LogSizeTimerTask(build, listener, allowedLogSize, failBuild);
+            Timer.get().scheduleAtFixedRate(logSizeTimerTask, DELAY, PERIOD, TimeUnit.MILLISECONDS);
+            context.setDisposer(new LogSizeTimerTaskDisposer(logSizeTimerTask));
+        }
+    }
 
-            @Override
-            public boolean tearDown(AbstractBuild build, BuildListener listener)
-                throws IOException, InterruptedException {
-                if (allowedLogSize > 0) {
-                    logtask.cancel();
-                }
-                return true;
+    /**TimerTask that checks log file size in regular intervals.*/
+    private static class LogSizeTimerTask extends SafeTimerTask {
+        private final Run<?, ?> build;
+        private final TaskListener listener;
+        private final int allowedLogSize;
+        private final boolean failBuild;
+
+        /**
+         * Constructor for TimerTask that checks log file size.
+         * @param build the current build
+         * @param listener TaskListener used for logging
+         * @param allowedLogSize the maximum size of the log
+         * @param failBuild fail the build rather than aborting it
+         */
+        private LogSizeTimerTask(
+                Run<?, ?> build, TaskListener listener, int allowedLogSize, boolean failBuild) {
+            this.build = build;
+            this.listener = listener;
+            this.allowedLogSize = allowedLogSize;
+            this.failBuild = failBuild;
+        }
+
+        /**Interrupts build if log file is too big.*/
+        public void doRun() {
+            final Executor e = build.getExecutor();
+            if (e != null
+                    && build.getLogFile().length() > allowedLogSize * MB
+                    && !e.isInterrupted()) {
+                listener.getLogger().println(
+                        ">>> Max Log Size reached "+allowedLogSize+"(MB). Aborting <<<");
+                e.interrupt(failBuild ? Result.FAILURE : Result.ABORTED);
             }
         }
-        
-        listener.getLogger().println(
-                "Executor: " + build.getExecutor().getNumber());
-        return new EnvironmentImpl();
+    }
+
+    private static class LogSizeTimerTaskDisposer extends Disposer {
+
+        private static final long serialVersionUID = 204030731559819462L;
+        private transient LogSizeTimerTask logSizeTimerTask;
+
+        public LogSizeTimerTaskDisposer(LogSizeTimerTask logSizeTimerTask) {
+            this.logSizeTimerTask = logSizeTimerTask;
+        }
+
+        @Override
+        public void tearDown(
+                Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener)
+                throws IOException, InterruptedException {
+            if (logSizeTimerTask != null) {
+                logSizeTimerTask.cancel();
+            }
+        }
     }
     
 

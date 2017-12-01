@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
@@ -25,7 +26,8 @@ THE SOFTWARE.
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>1.509.3</version>
+        <version>2.33</version>
+        <relativePath />
     </parent>
  
     <artifactId>logfilesizechecker</artifactId>
@@ -41,11 +43,96 @@ THE SOFTWARE.
    </license>
    </licenses>
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <maven-surefire-plugin.version>2.12</maven-surefire-plugin.version>
+        <jenkins.version>1.642.3</jenkins.version>
+        <java.level>7</java.level>
+        <cobertura-maven-plugin.version>2.7</cobertura-maven-plugin.version>
+        <jdepend-maven-plugin.version>2.0</jdepend-maven-plugin.version>
+        <jenkins-annotation-indexer.version>1.9</jenkins-annotation-indexer.version>
+        <jenkins-basic-steps.version>2.3</jenkins-basic-steps.version>
+        <jenkins-durable-task-step.version>2.11</jenkins-durable-task-step.version>
+        <jenkins-scm-api.version>2.0.7</jenkins-scm-api.version>
+        <jenkins-script-security.version>1.26</jenkins-script-security.version>
+        <jenkins-structs.version>1.6</jenkins-structs.version>
+        <jenkins-workflow-api.version>2.11</jenkins-workflow-api.version>
+        <jenkins-workflow-cps.version>2.29</jenkins-workflow-cps.version>
+        <jenkins-workflow-job.version>2.9</jenkins-workflow-job.version>
+        <jenkins-workflow-step-api.version>2.11</jenkins-workflow-step-api.version>
+        <jenkins-workflow-support.version>2.14</jenkins-workflow-support.version>
+        <maven-jxr-plugin.version>2.5</maven-jxr-plugin.version>
+        <maven-surefire-plugin.version>2.20</maven-surefire-plugin.version>
         <maven-surefire-report-plugin.version>${maven-surefire-plugin.version}</maven-surefire-report-plugin.version>
     </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-basic-steps</artifactId>
+            <version>${jenkins-basic-steps.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-durable-task-step</artifactId>
+            <version>${jenkins-durable-task-step.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>scm-api</artifactId>
+            <version>${jenkins-scm-api.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-api</artifactId>
+            <version>${jenkins-workflow-api.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-cps</artifactId>
+            <version>${jenkins-workflow-cps.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-job</artifactId>
+            <version>${jenkins-workflow-job.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-support</artifactId>
+            <version>${jenkins-workflow-support.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.jenkins-ci</groupId>
+                <artifactId>annotation-indexer</artifactId>
+                <version>${jenkins-annotation-indexer.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jenkins-ci.plugins</groupId>
+                <artifactId>script-security</artifactId>
+                <version>${jenkins-script-security.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jenkins-ci.plugins</groupId>
+                <artifactId>structs</artifactId>
+                <version>${jenkins-structs.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jenkins-ci.plugins.workflow</groupId>
+                <artifactId>workflow-step-api</artifactId>
+                <version>${jenkins-workflow-step-api.version}</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <developers>
         <developer>
             <id>stefanbrausch</id>
@@ -59,9 +146,9 @@ THE SOFTWARE.
         </developer>
     </developers>
     <scm>
-        <connection>scm:git:ssh://github.com/jenkinsci/logfilesizechecker-plugin.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/jenkinsci/logfilesizechecker-plugin.git</developerConnection>
-        <url>https://github.com/jenkinsci/logfilesizechecker-plugin</url>
+        <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
+        <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
     </scm>
     <issueManagement>
         <system>JIRA</system>
@@ -72,6 +159,7 @@ THE SOFTWARE.
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>cobertura-maven-plugin</artifactId>
+                <version>${cobertura-maven-plugin.version}</version>
                 <configuration>
                     <instrumentation>
                     </instrumentation>
@@ -80,28 +168,6 @@ THE SOFTWARE.
                     <execution>
                         <goals>
                             <goal>instrument</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-site-plugin</artifactId>
-                <version>3.3</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>jswidgets-plugin-analyze</id>
-                        <phase>validate</phase>
-                        <configuration>
-                            <scriptableOutput>true</scriptableOutput>
-                        </configuration>
-                        <goals>
-                            <goal>analyze-only</goal>
-                            <goal>tree</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -121,44 +187,21 @@ THE SOFTWARE.
     <repositories>
         <repository>
             <id>repo.jenkins-ci.org</id>
-            <url>http://repo.jenkins-ci.org/public/</url>
+            <url>https://repo.jenkins-ci.org/public/</url>
         </repository>
     </repositories>
     <pluginRepositories>
         <pluginRepository>
             <id>repo.jenkins-ci.org</id>
-            <url>http://repo.jenkins-ci.org/public/</url>
+            <url>https://repo.jenkins-ci.org/public/</url>
         </pluginRepository>
     </pluginRepositories>
     <reporting>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>${maven-project-info-reports-plugin.version}</version>
-                <configuration>
-                    <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
-                    <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
                 <version>${maven-jxr-plugin.version}</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.8.1</version>
-                <configuration>
-                    <show>private</show>
-                    <quiet>true</quiet>
-                    <links>
-                        <link>http://docs.oracle.com/javase/6/docs/api/</link>
-                        <link>http://javadoc.jenkins-ci.org/</link>
-                        <link>http://stapler.java.net/apidocs/</link>
-                    </links>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -193,18 +236,6 @@ THE SOFTWARE.
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
-                <artifactId>findbugs-maven-plugin</artifactId>
-                <version>2.4.0</version>
-                <configuration>
-                    <xmlOutput>true</xmlOutput>
-                    <threshold>Low</threshold>
-                    <effort>Max</effort>
-                    <debug>false</debug>
-                    <relaxed>false</relaxed>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
                 <artifactId>cobertura-maven-plugin</artifactId>
                 <version>${cobertura-maven-plugin.version}</version>
                 <configuration>
@@ -218,11 +249,6 @@ THE SOFTWARE.
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>jdepend-maven-plugin</artifactId>
                 <version>${jdepend-maven-plugin.version}</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>${maven-dependency-plugin.version}</version>
             </plugin>
         </plugins>
     </reporting>
