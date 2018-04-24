@@ -112,7 +112,7 @@ public class LogfilesizecheckerWrapper extends SimpleBuildWrapper implements Ser
             if (e != null
                     && build.getLogFile().length() > allowedLogSize * MB
                     && !e.isInterrupted()) {
-                String cause = ">>> Max Log Size reached "+allowedLogSize+"(MB). Aborting <<<";
+                final String cause = ">>> Max Log Size reached "+allowedLogSize+"(MB). Aborting <<<";
                 listener.getLogger().println(cause);
                 CauseOfInterruption causeOfInterruption = new CauseOfInterruption() {
                     @Override
