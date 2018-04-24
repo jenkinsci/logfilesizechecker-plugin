@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 
+import jenkins.model.CauseOfInterruption;
 import jenkins.tasks.SimpleBuildWrapper;
 import jenkins.util.Timer;
 
@@ -111,9 +112,15 @@ public class LogfilesizecheckerWrapper extends SimpleBuildWrapper implements Ser
             if (e != null
                     && build.getLogFile().length() > allowedLogSize * MB
                     && !e.isInterrupted()) {
-                listener.getLogger().println(
-                        ">>> Max Log Size reached "+allowedLogSize+"(MB). Aborting <<<");
-                e.interrupt(failBuild ? Result.FAILURE : Result.ABORTED);
+                String cause = ">>> Max Log Size reached "+allowedLogSize+"(MB). Aborting <<<";
+                listener.getLogger().println(cause);
+                CauseOfInterruption causeOfInterruption = new CauseOfInterruption() {
+                    @Override
+                    public String getShortDescription() {
+                        return cause;
+                    }
+                };
+                e.interrupt(failBuild ? Result.FAILURE : Result.ABORTED, causeOfInterruption);
             }
         }
     }
