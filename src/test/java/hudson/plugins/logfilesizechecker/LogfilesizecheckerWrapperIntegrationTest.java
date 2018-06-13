@@ -45,7 +45,7 @@ public class LogfilesizecheckerWrapperIntegrationTest {
         // maxLogSize=1MB, failBuild=true, setOwn=true
         final FreeStyleProject project = rule.createFreeStyleProject("freestyle");
         project.getBuildersList().add(printFileCommand("lorem2100kB"));
-        project.getBuildersList().add(sleepCommand(1));
+        project.getBuildersList().add(sleepCommand(3));
         project.getBuildersList().add(printFileCommand("lorem2100kB"));
         project.getBuildWrappersList().add(new LogfilesizecheckerWrapper(1, true, true));
 
@@ -60,7 +60,7 @@ public class LogfilesizecheckerWrapperIntegrationTest {
         // maxLogSize=1MB, failBuild=false, setOwn=true
         final FreeStyleProject project = rule.createFreeStyleProject("freestyle");
         project.getBuildersList().add(printFileCommand("lorem2100kB"));
-        project.getBuildersList().add(sleepCommand(1));
+        project.getBuildersList().add(sleepCommand(3));
         project.getBuildersList().add(printFileCommand("lorem2100kB"));
         project.getBuildWrappersList().add(new LogfilesizecheckerWrapper(1, false, true));
 
@@ -76,7 +76,7 @@ public class LogfilesizecheckerWrapperIntegrationTest {
         // maxLogSize=1MB, failBuild=false, setOwn=false
         final FreeStyleProject project = rule.createFreeStyleProject("freestyle");
         project.getBuildersList().add(printFileCommand("lorem2100kB"));
-        project.getBuildersList().add(sleepCommand(1));
+        project.getBuildersList().add(sleepCommand(3));
         project.getBuildersList().add(printFileCommand("lorem2100kB"));
         project.getBuildWrappersList().add(new LogfilesizecheckerWrapper(1, false, false));
 
@@ -92,7 +92,7 @@ public class LogfilesizecheckerWrapperIntegrationTest {
         // maxLogSize=5MB, failBuild=false, setOwn=true
         final FreeStyleProject project = rule.createFreeStyleProject("freestyle");
         project.getBuildersList().add(printFileCommand("lorem2100kB"));
-        project.getBuildersList().add(sleepCommand(1));
+        project.getBuildersList().add(sleepCommand(3));
         project.getBuildersList().add(printFileCommand("lorem2100kB"));
         project.getBuildWrappersList().add(new LogfilesizecheckerWrapper(5, false, true));
 
@@ -108,7 +108,7 @@ public class LogfilesizecheckerWrapperIntegrationTest {
         // maxLogSize=0MB, failBuild=true, setOwn=false, defaultLogSize=1
         final FreeStyleProject project = rule.createFreeStyleProject("freestyle");
         project.getBuildersList().add(printFileCommand("lorem2100kB"));
-        project.getBuildersList().add(sleepCommand(1));
+        project.getBuildersList().add(sleepCommand(3));
         project.getBuildersList().add(printFileCommand("lorem2100kB"));
         project.getBuildWrappersList().add(new LogfilesizecheckerWrapper(0, true, false));
 
@@ -132,7 +132,7 @@ public class LogfilesizecheckerWrapperIntegrationTest {
                         "node {\n"
                                 + "  wrap([$class: 'LogfilesizecheckerWrapper', 'maxLogSize': 1, 'failBuild': true, 'setOwn': true]) {\n"
                                 + String.format("    %s\n", printFilePipelineStep("lorem2100kB"))
-                                + "    sleep 1\n"
+                                + "    sleep 3\n"
                                 + String.format("    %s\n", printFilePipelineStep("lorem2100kB"))
                                 + "  }\n"
                                 + "}",
@@ -154,7 +154,7 @@ public class LogfilesizecheckerWrapperIntegrationTest {
                         "node {\n"
                                 + "  wrap([$class: 'LogfilesizecheckerWrapper', 'maxLogSize': 1, 'failBuild': false, 'setOwn': true]) {\n"
                                 + String.format("    %s\n", printFilePipelineStep("lorem2100kB"))
-                                + "    sleep 1\n"
+                                + "    sleep 3\n"
                                 + String.format("    %s\n", printFilePipelineStep("lorem2100kB"))
                                 + "  }\n"
                                 + "}",
@@ -175,7 +175,7 @@ public class LogfilesizecheckerWrapperIntegrationTest {
                         "node {\n"
                                 + "  wrap([$class: 'LogfilesizecheckerWrapper', 'maxLogSize': 1, 'failBuild': false, 'setOwn': false]) {\n"
                                 + String.format("    %s\n", printFilePipelineStep("lorem2100kB"))
-                                + "    sleep 1\n"
+                                + "    sleep 3\n"
                                 + String.format("    %s\n", printFilePipelineStep("lorem2100kB"))
                                 + "  }\n"
                                 + "}",
@@ -196,7 +196,7 @@ public class LogfilesizecheckerWrapperIntegrationTest {
                         "node {\n"
                                 + "  wrap([$class: 'LogfilesizecheckerWrapper', 'maxLogSize': 5, 'failBuild': false, 'setOwn': true]) {\n"
                                 + String.format("    %s\n", printFilePipelineStep("lorem2100kB"))
-                                + "    sleep 1\n"
+                                + "    sleep 3\n"
                                 + String.format("    %s\n", printFilePipelineStep("lorem2100kB"))
                                 + "  }\n"
                                 + "}",
@@ -217,7 +217,7 @@ public class LogfilesizecheckerWrapperIntegrationTest {
                         "node {\n"
                                 + "  wrap([$class: 'LogfilesizecheckerWrapper', 'maxLogSize': 0, 'failBuild': true, 'setOwn': false]) {\n"
                                 + String.format("    %s\n", printFilePipelineStep("lorem2100kB"))
-                                + "    sleep 1\n"
+                                + "    sleep 3\n"
                                 + String.format("    %s\n", printFilePipelineStep("lorem2100kB"))
                                 + "  }\n"
                                 + "}",
