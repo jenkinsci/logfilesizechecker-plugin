@@ -1,9 +1,12 @@
 
 package hudson.plugins.logfilesizechecker;
 
+import hudson.Functions;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
+import hudson.tasks.BatchFile;
+import hudson.tasks.CommandInterpreter;
 import hudson.tasks.Shell;
 
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
@@ -18,14 +21,32 @@ public class LogfilesizecheckerWrapperIntegrationTest {
 
     @Rule public JenkinsRule rule = new JenkinsRule();
 
+    private static CommandInterpreter printFileCommand(String filename) {
+        return Functions.isWindows()
+                ? new BatchFile(String.format("type %s", filename))
+                : new Shell(String.format("cat %s", filename));
+    }
+
+    private static CommandInterpreter sleepCommand(int seconds) {
+        return Functions.isWindows()
+                ? new BatchFile(String.format("ping -n %s 127.0.0.1 >nul", seconds))
+                : new Shell(String.format("sleep %s", seconds));
+    }
+
+    private static String printFilePipelineStep(String filename) {
+        return Functions.isWindows()
+                ? String.format("bat 'type %s'", filename)
+                : String.format("sh 'cat %s'", filename);
+    }
+
     @Test
     @LocalData
     public void test1() throws Exception {
         // maxLogSize=1MB, failBuild=true, setOwn=true
         final FreeStyleProject project = rule.createFreeStyleProject("freestyle");
-        project.getBuildersList().add(new Shell("cat lorem2100kB"));
-        project.getBuildersList().add(new Shell("sleep 1"));
-        project.getBuildersList().add(new Shell("cat lorem2100kB"));
+        project.getBuildersList().add(printFileCommand("lorem2100kB"));
+        project.getBuildersList().add(sleepCommand(3));
+        project.getBuildersList().add(printFileCommand("lorem2100kB"));
         project.getBuildWrappersList().add(new LogfilesizecheckerWrapper(1, true, true));
 
         final FreeStyleBuild build = project.scheduleBuild2(0).get();
@@ -38,9 +59,9 @@ public class LogfilesizecheckerWrapperIntegrationTest {
     public void test2() throws Exception {
         // maxLogSize=1MB, failBuild=false, setOwn=true
         final FreeStyleProject project = rule.createFreeStyleProject("freestyle");
-        project.getBuildersList().add(new Shell("cat lorem2100kB"));
-        project.getBuildersList().add(new Shell("sleep 1"));
-        project.getBuildersList().add(new Shell("cat lorem2100kB"));
+        project.getBuildersList().add(printFileCommand("lorem2100kB"));
+        project.getBuildersList().add(sleepCommand(3));
+        project.getBuildersList().add(printFileCommand("lorem2100kB"));
         project.getBuildWrappersList().add(new LogfilesizecheckerWrapper(1, false, true));
 
         final FreeStyleBuild build = project.scheduleBuild2(0).get();
@@ -54,9 +75,9 @@ public class LogfilesizecheckerWrapperIntegrationTest {
     public void test3() throws Exception {
         // maxLogSize=1MB, failBuild=false, setOwn=false
         final FreeStyleProject project = rule.createFreeStyleProject("freestyle");
-        project.getBuildersList().add(new Shell("cat lorem2100kB"));
-        project.getBuildersList().add(new Shell("sleep 1"));
-        project.getBuildersList().add(new Shell("cat lorem2100kB"));
+        project.getBuildersList().add(printFileCommand("lorem2100kB"));
+        project.getBuildersList().add(sleepCommand(3));
+        project.getBuildersList().add(printFileCommand("lorem2100kB"));
         project.getBuildWrappersList().add(new LogfilesizecheckerWrapper(1, false, false));
 
         final FreeStyleBuild build = project.scheduleBuild2(0).get();
@@ -70,9 +91,9 @@ public class LogfilesizecheckerWrapperIntegrationTest {
     public void test4() throws Exception {
         // maxLogSize=5MB, failBuild=false, setOwn=true
         final FreeStyleProject project = rule.createFreeStyleProject("freestyle");
-        project.getBuildersList().add(new Shell("cat lorem2100kB"));
-        project.getBuildersList().add(new Shell("sleep 1"));
-        project.getBuildersList().add(new Shell("cat lorem2100kB"));
+        project.getBuildersList().add(printFileCommand("lorem2100kB"));
+        project.getBuildersList().add(sleepCommand(3));
+        project.getBuildersList().add(printFileCommand("lorem2100kB"));
         project.getBuildWrappersList().add(new LogfilesizecheckerWrapper(5, false, true));
 
         final FreeStyleBuild build = project.scheduleBuild2(0).get();
@@ -86,9 +107,9 @@ public class LogfilesizecheckerWrapperIntegrationTest {
     public void test5() throws Exception {
         // maxLogSize=0MB, failBuild=true, setOwn=false, defaultLogSize=1
         final FreeStyleProject project = rule.createFreeStyleProject("freestyle");
-        project.getBuildersList().add(new Shell("cat lorem2100kB"));
-        project.getBuildersList().add(new Shell("sleep 1"));
-        project.getBuildersList().add(new Shell("cat lorem2100kB"));
+        project.getBuildersList().add(printFileCommand("lorem2100kB"));
+        project.getBuildersList().add(sleepCommand(3));
+        project.getBuildersList().add(printFileCommand("lorem2100kB"));
         project.getBuildWrappersList().add(new LogfilesizecheckerWrapper(0, true, false));
 
         int oldValue = LogfilesizecheckerWrapper.DESCRIPTOR.getDefaultLogSize();
@@ -110,9 +131,9 @@ public class LogfilesizecheckerWrapperIntegrationTest {
                 new CpsFlowDefinition(
                         "node {\n"
                                 + "  wrap([$class: 'LogfilesizecheckerWrapper', 'maxLogSize': 1, 'failBuild': true, 'setOwn': true]) {\n"
-                                + "    sh 'cat lorem2100kB'\n"
-                                + "    sleep 1\n"
-                                + "    sh 'cat lorem2100kB'\n"
+                                + String.format("    %s\n", printFilePipelineStep("lorem2100kB"))
+                                + "    sleep 3\n"
+                                + String.format("    %s\n", printFilePipelineStep("lorem2100kB"))
                                 + "  }\n"
                                 + "}",
                         true));
@@ -132,9 +153,9 @@ public class LogfilesizecheckerWrapperIntegrationTest {
                 new CpsFlowDefinition(
                         "node {\n"
                                 + "  wrap([$class: 'LogfilesizecheckerWrapper', 'maxLogSize': 1, 'failBuild': false, 'setOwn': true]) {\n"
-                                + "    sh 'cat lorem2100kB'\n"
-                                + "    sleep 1\n"
-                                + "    sh 'cat lorem2100kB'\n"
+                                + String.format("    %s\n", printFilePipelineStep("lorem2100kB"))
+                                + "    sleep 3\n"
+                                + String.format("    %s\n", printFilePipelineStep("lorem2100kB"))
                                 + "  }\n"
                                 + "}",
                         true));
@@ -153,9 +174,9 @@ public class LogfilesizecheckerWrapperIntegrationTest {
                 new CpsFlowDefinition(
                         "node {\n"
                                 + "  wrap([$class: 'LogfilesizecheckerWrapper', 'maxLogSize': 1, 'failBuild': false, 'setOwn': false]) {\n"
-                                + "    sh 'cat lorem2100kB'\n"
-                                + "    sleep 1\n"
-                                + "    sh 'cat lorem2100kB'\n"
+                                + String.format("    %s\n", printFilePipelineStep("lorem2100kB"))
+                                + "    sleep 3\n"
+                                + String.format("    %s\n", printFilePipelineStep("lorem2100kB"))
                                 + "  }\n"
                                 + "}",
                         true));
@@ -174,9 +195,9 @@ public class LogfilesizecheckerWrapperIntegrationTest {
                 new CpsFlowDefinition(
                         "node {\n"
                                 + "  wrap([$class: 'LogfilesizecheckerWrapper', 'maxLogSize': 5, 'failBuild': false, 'setOwn': true]) {\n"
-                                + "    sh 'cat lorem2100kB'\n"
-                                + "    sleep 1\n"
-                                + "    sh 'cat lorem2100kB'\n"
+                                + String.format("    %s\n", printFilePipelineStep("lorem2100kB"))
+                                + "    sleep 3\n"
+                                + String.format("    %s\n", printFilePipelineStep("lorem2100kB"))
                                 + "  }\n"
                                 + "}",
                         true));
@@ -195,9 +216,9 @@ public class LogfilesizecheckerWrapperIntegrationTest {
                 new CpsFlowDefinition(
                         "node {\n"
                                 + "  wrap([$class: 'LogfilesizecheckerWrapper', 'maxLogSize': 0, 'failBuild': true, 'setOwn': false]) {\n"
-                                + "    sh 'cat lorem2100kB'\n"
-                                + "    sleep 1\n"
-                                + "    sh 'cat lorem2100kB'\n"
+                                + String.format("    %s\n", printFilePipelineStep("lorem2100kB"))
+                                + "    sleep 3\n"
+                                + String.format("    %s\n", printFilePipelineStep("lorem2100kB"))
                                 + "  }\n"
                                 + "}",
                         true));
