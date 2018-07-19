@@ -41,12 +41,9 @@ public class LogfilesizecheckerWrapper extends SimpleBuildWrapper implements Ser
 
     /** Fail the build rather than aborting it. */
     public boolean failBuild;
-    
-    /**Period for timer task that checks the logfile size.*/
-    private static final long PERIOD = 1000L;
 
     /**Delay for timer task that checks the logfile size.*/
-    private static final long DELAY = 1000L;
+    private static final long DELAY = 1;
 
     /**Conversion factor for Mega Bytes.*/
     private static final long MB = 1024L * 1024L;
@@ -78,7 +75,8 @@ public class LogfilesizecheckerWrapper extends SimpleBuildWrapper implements Ser
         if (allowedLogSize > 0) {
             LogSizeTimerTask logSizeTimerTask =
                     new LogSizeTimerTask(build, listener, allowedLogSize, failBuild);
-            Timer.get().scheduleAtFixedRate(logSizeTimerTask, DELAY, PERIOD, TimeUnit.MILLISECONDS);
+            Timer.get().scheduleAtFixedRate(logSizeTimerTask, DELAY,
+                    DESCRIPTOR.getCheckPeriod(), TimeUnit.SECONDS);
             context.setDisposer(new LogSizeTimerTaskDisposer(logSizeTimerTask));
         }
     }
@@ -153,6 +151,9 @@ public class LogfilesizecheckerWrapper extends SimpleBuildWrapper implements Ser
         /**If there is no job specific size set, this will be used.*/
         private int defaultLogSize;
 
+        /**The delay between successive checks.*/
+        private int checkPeriod = 1;
+
         /**Constructor loads previously saved form data.*/
         DescriptorImpl() {
             super(LogfilesizecheckerWrapper.class);
@@ -192,18 +193,24 @@ public class LogfilesizecheckerWrapper extends SimpleBuildWrapper implements Ser
         }
 
         /**
+         * Returns the period, in seconds, between successive checks.
+         * @return the globally set period between checks
+         */
+        public int getCheckPeriod() {
+            return checkPeriod;
+        }
+
+        /**
          * 
          * 
          * {@inheritDoc}
          */
         public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
             final String size = formData.getString("defaultLogSize");
+            final String delay = formData.getString("checkPeriod");
 
-            if (size != null) {
-                defaultLogSize = Integer.parseInt(size);
-            } else {
-                defaultLogSize = 0;
-            }
+            defaultLogSize = size != null ? Integer.parseInt(size) : 0;
+            checkPeriod = delay != null ? Integer.parseInt(delay) : 1;
             save();
             return super.configure(req, formData);
         }

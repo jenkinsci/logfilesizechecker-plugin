@@ -4,5 +4,8 @@
        <f:entry title="${%Max Log Size in MB}" field="defaultLogSize">
           <f:textbox value="${it.getDefaultLogSize()}"/>
        </f:entry>
+       <f:entry title="${%Check frequency in seconds}" field="checkPeriod">
+          <f:textbox value="${it.getDefaultDelay()}"/>
+       </f:entry>
     </f:section>
 </j:jelly>
