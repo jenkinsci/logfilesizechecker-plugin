@@ -105,7 +105,7 @@ public class LogfilesizecheckerWrapper extends SimpleBuildWrapper implements Ser
 
         /**Interrupts build if log file is too big.*/
         public void doRun() {
-            if (build.getLogFile().length() > allowedLogSize * MB) {
+            if (build.getLogText().length() > allowedLogSize * MB) {
                 final Executor e = build.getExecutor();
                 if (e != null && !e.isInterrupted()) {
                     listener.getLogger().println(
