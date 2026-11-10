@@ -221,11 +221,12 @@ def main():
 
     # 6. Verify GitHub Dependabot alerts == 0 Open
     t0 = time.time()
+    repo_slug = os.environ.get("GITHUB_REPOSITORY", "seab4ng/logfilesizechecker-plugin")
     open_dependabot = 0
     closed_dependabot = 53
     try:
         db_open = gh_get_json(
-            "https://api.github.com/repos/seab4ng/logfilesizechecker-plugin/dependabot/alerts?state=open&per_page=100",
+            f"https://api.github.com/repos/{repo_slug}/dependabot/alerts?state=open&per_page=100",
             token,
         )
         open_dependabot = len(db_open)
@@ -244,7 +245,7 @@ def main():
     open_codeql = 0
     try:
         cs_open = gh_get_json(
-            "https://api.github.com/repos/seab4ng/logfilesizechecker-plugin/code-scanning/alerts?state=open&per_page=100",
+            f"https://api.github.com/repos/{repo_slug}/code-scanning/alerts?state=open&per_page=100",
             token,
         )
         open_codeql = len(cs_open)
