@@ -18,4 +18,4 @@ jobs:
     uses: jenkins-infra/jenkins-security-scan/.github/workflows/jenkins-security-scan.yaml@da7438f10fecc21e40174d420ef34daae0874122 # v2
     with:
       java-cache: 'maven'
-      java-version: '8' # Match your project's <java.level>8</java.level>
+      java-version: '21'

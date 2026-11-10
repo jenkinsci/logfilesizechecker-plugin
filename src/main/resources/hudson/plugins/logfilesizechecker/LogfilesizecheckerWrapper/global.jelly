@@ -2,10 +2,10 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <f:section title="${%Abort Build if log file gets too big}">
        <f:entry title="${%Max Log Size in MB}" field="defaultLogSize">
-          <f:textbox value="${it.getDefaultLogSize()}"/>
+          <f:number clazz="number" min="0" step="1" value="${descriptor.getDefaultLogSize()}"/>
        </f:entry>
        <f:entry title="${%Check frequency in seconds}" field="checkPeriod">
-          <f:textbox value="${it.getDefaultDelay()}"/>
+          <f:number clazz="number" min="1" step="1" value="${descriptor.getCheckPeriod()}"/>
        </f:entry>
     </f:section>
 </j:jelly>
