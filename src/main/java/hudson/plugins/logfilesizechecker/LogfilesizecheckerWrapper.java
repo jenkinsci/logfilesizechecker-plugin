@@ -16,11 +16,11 @@ import hudson.tasks.BuildWrapperDescriptor;
 import hudson.triggers.SafeTimerTask;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import jenkins.model.CauseOfInterruption;
+import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildWrapper;
 import jenkins.util.Timer;
 
@@ -36,9 +36,7 @@ import org.kohsuke.stapler.StaplerRequest2;
  *
  * @author Stefan Brausch
  */
-public class LogfilesizecheckerWrapper extends SimpleBuildWrapper implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class LogfilesizecheckerWrapper extends SimpleBuildWrapper {
 
     /** Set your own max size instead of using the default. */
     public boolean setOwn;
@@ -228,9 +226,11 @@ public class LogfilesizecheckerWrapper extends SimpleBuildWrapper implements Ser
         private int checkPeriod = 1;
 
         /** Constructor loads previously saved form data. */
-        DescriptorImpl() {
+        public DescriptorImpl() {
             super(LogfilesizecheckerWrapper.class);
-            load();
+            if (Jenkins.getInstanceOrNull() != null) {
+                load();
+            }
         }
 
         /**
