@@ -59,8 +59,13 @@ jobs:
           python3 - << 'EOF' >> "$GITHUB_STEP_SUMMARY"
           import json
           from pathlib import Path
-          e2e_cases = json.loads(Path("target/surefire-reports/live_jenkins_e2e_cases.json").read_text())
-          sec = json.loads(Path("target/surefire-reports/security_scan_report.json").read_text())
+          e2e_path = Path("target/surefire-reports/live_jenkins_e2e_cases.json")
+          sec_path = Path("target/surefire-reports/security_scan_report.json")
+          if not e2e_path.exists() or not sec_path.exists():
+              print("E2E or Security report JSON not generated yet.")
+              raise SystemExit(0)
+          e2e_cases = json.loads(e2e_path.read_text())
+          sec = json.loads(sec_path.read_text())
           passed_e2e = sum(1 for c in e2e_cases if c.get("passed"))
           passed_sec = sum(1 for c in sec.get("checks", []) if c.get("passed"))
           print(f"- **Live Jenkins E2E Cases**: **{passed_e2e}/{len(e2e_cases)} Passed** (`0 Failed`)")

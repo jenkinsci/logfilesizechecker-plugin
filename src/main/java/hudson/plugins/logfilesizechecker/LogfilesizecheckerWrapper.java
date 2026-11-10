@@ -39,13 +39,13 @@ import org.kohsuke.stapler.StaplerRequest2;
 public class LogfilesizecheckerWrapper extends SimpleBuildWrapper {
 
     /** Set your own max size instead of using the default. */
-    public boolean setOwn;
+    private boolean setOwn;
 
     /** If the log file for the build has more MB, it will be terminated. */
-    public int maxLogSize;
+    private int maxLogSize;
 
     /** Fail the build rather than aborting it. */
-    public boolean failBuild;
+    private boolean failBuild;
 
     /** Delay for timer task that checks the logfile size. */
     private static final long DELAY = 1;
