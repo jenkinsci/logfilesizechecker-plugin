@@ -379,32 +379,37 @@ class LivePluginE2ERunnerBuilder extends Builder {
             "Submit DescriptorImpl.configure with valid, blank, negative, and non-numeric inputs",
             "Validated & Persisted to XML",
             {
+                def mockReq = java.lang.reflect.Proxy.newProxyInstance(
+                    org.kohsuke.stapler.StaplerRequest2.classLoader,
+                    [org.kohsuke.stapler.StaplerRequest2] as Class[],
+                    { proxy, method, args -> null } as java.lang.reflect.InvocationHandler
+                ) as org.kohsuke.stapler.StaplerRequest2
                 def configureMethod = desc.class.getMethod("configure", org.kohsuke.stapler.StaplerRequest2.class, JSONObject.class)
                 JSONObject validJson = new JSONObject()
                 validJson.put("defaultLogSize", "8")
                 validJson.put("checkPeriod", "3")
-                configureMethod.invoke(desc, null, validJson)
+                configureMethod.invoke(desc, mockReq, validJson)
                 assert desc.getDefaultLogSize() == 8
                 assert desc.getCheckPeriod() == 3
 
                 JSONObject blankJson = new JSONObject()
                 blankJson.put("defaultLogSize", "   ")
                 blankJson.put("checkPeriod", "")
-                configureMethod.invoke(desc, null, blankJson)
+                configureMethod.invoke(desc, mockReq, blankJson)
                 assert desc.getDefaultLogSize() == 0
                 assert desc.getCheckPeriod() == 1
 
                 JSONObject negJson = new JSONObject()
                 negJson.put("defaultLogSize", "-10")
                 negJson.put("checkPeriod", "0")
-                configureMethod.invoke(desc, null, negJson)
+                configureMethod.invoke(desc, mockReq, negJson)
                 assert desc.getDefaultLogSize() == 0
                 assert desc.getCheckPeriod() == 1
 
                 JSONObject nonNumJson = new JSONObject()
                 nonNumJson.put("defaultLogSize", "not-a-number")
                 nonNumJson.put("checkPeriod", "invalid")
-                configureMethod.invoke(desc, null, nonNumJson)
+                configureMethod.invoke(desc, mockReq, nonNumJson)
                 assert desc.getDefaultLogSize() == 0
                 assert desc.getCheckPeriod() == 1
 

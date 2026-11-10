@@ -298,7 +298,7 @@ public class LogfilesizecheckerWrapper extends SimpleBuildWrapper {
             setDefaultLogSize(parseIntOrDefault(size, 0));
             setCheckPeriod(parseIntOrDefault(delay, 1));
             save();
-            return super.configure(req, formData);
+            return req != null ? super.configure(req, formData) : true;
         }
 
         private static int parseIntOrDefault(String value, int defaultValue) {
