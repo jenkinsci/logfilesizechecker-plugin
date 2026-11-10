@@ -153,9 +153,9 @@ def main():
     # 5. POM & Sub-Dependency Version Audit + Live GHSA Vulnerability Scan
     t0 = time.time()
     key_dependencies = [
-        ("org.jenkins-ci.main:jenkins-core", "2.580.2", "Core Runtime (Parent/Baseline)"),
+        ("org.jenkins-ci.main:jenkins-core", "2.590", "Core Runtime (Parent/Baseline)"),
         ("org.jenkins-ci.plugins:plugin", "6.2250.va_d01d559a_209", "Parent POM"),
-        ("io.jenkins.tools.bom:bom-2.580.x", "7312.v55b_41644b_77d", "Dependency Management BOM"),
+        ("io.jenkins.tools.bom:bom-weekly", "7312.v55b_41644b_77d", "Dependency Management BOM"),
         ("org.jenkins-ci.plugins:script-security", "1436.v1082791135e4", "Plugin Dependency (BOM)"),
         ("org.jenkins-ci.plugins.workflow:workflow-cps", "4403.v471713a_cea_19", "Plugin Dependency (BOM)"),
         ("org.jenkins-ci.plugins.workflow:workflow-job", "1622.vc41c189cb_e5f", "Plugin Dependency (BOM)"),
@@ -166,16 +166,16 @@ def main():
         ("org.jenkins-ci.plugins.workflow:workflow-step-api", "724.v538c2362b_dfb_", "Plugin Dependency (BOM)"),
         ("org.jenkins-ci.plugins:scm-api", "728.vc30dcf7a_0df5", "Plugin Dependency (BOM)"),
         ("org.jenkins-ci.plugins:structs", "362.va_b_695ef4fdf9", "Plugin Dependency (BOM)"),
-        ("org.springframework:spring-core", "7.0.9", "Transitive Sub-Dependency (Jenkins BOM)"),
-        ("org.springframework.security:spring-security-core", "7.1.1", "Transitive Sub-Dependency (Jenkins BOM)"),
-        ("com.google.guava:guava", "33.7.1-jre", "Transitive Sub-Dependency (Jenkins BOM)"),
+        ("org.springframework:spring-core", "7.0.10", "Transitive Sub-Dependency (Jenkins BOM)"),
+        ("org.springframework.security:spring-security-core", "7.1.2", "Transitive Sub-Dependency (Jenkins BOM)"),
+        ("com.google.guava:guava", "33.8.0-jre", "Transitive Sub-Dependency (Jenkins BOM)"),
         ("com.thoughtworks.xstream:xstream", "1.4.21", "Transitive Sub-Dependency (Jenkins BOM)"),
         ("commons-beanutils:commons-beanutils", "1.11.0", "Transitive Sub-Dependency (Jenkins BOM)"),
         ("commons-io:commons-io", "2.22.0", "Transitive Sub-Dependency (Jenkins BOM)"),
         ("commons-codec:commons-codec", "1.22.1", "Transitive Sub-Dependency (Jenkins BOM)"),
         ("org.apache.commons:commons-fileupload2-core", "2.0.0-M5", "Transitive Sub-Dependency (Jenkins BOM)"),
-        ("org.slf4j:slf4j-api", "2.0.19", "Transitive Sub-Dependency (Jenkins BOM)"),
-        ("org.ow2.asm:asm", "9.11", "Transitive Sub-Dependency (Jenkins BOM)"),
+        ("org.slf4j:slf4j-api", "2.0.20", "Transitive Sub-Dependency (Jenkins BOM)"),
+        ("org.ow2.asm:asm", "9.11.1", "Transitive Sub-Dependency (Jenkins BOM)"),
         ("org.kohsuke.stapler:stapler", "2123.v539a_775c45c3", "Transitive Sub-Dependency (Jenkins BOM)"),
         ("com.google.inject:guice", "6.0.0", "Transitive Sub-Dependency (Jenkins BOM)"),
     ]

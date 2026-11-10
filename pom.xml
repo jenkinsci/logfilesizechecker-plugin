@@ -78,8 +78,8 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
         <revision>1.6</revision>
         <changelist>-SNAPSHOT</changelist>
         <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
-        <jenkins.baseline>2.580</jenkins.baseline>
-        <jenkins.version>${jenkins.baseline}.2</jenkins.version>
+        <jenkins.baseline>weekly</jenkins.baseline>
+        <jenkins.version>2.590</jenkins.version>
         <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
         <hpi.strictBundledArtifacts>true</hpi.strictBundledArtifacts>
         <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
@@ -92,7 +92,7 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
         <dependencies>
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
-                <artifactId>bom-${jenkins.baseline}.x</artifactId>
+                <artifactId>bom-${jenkins.baseline}</artifactId>
                 <version>7312.v55b_41644b_77d</version>
                 <type>pom</type>
                 <scope>import</scope>
