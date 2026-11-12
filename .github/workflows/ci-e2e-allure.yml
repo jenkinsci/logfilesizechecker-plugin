@@ -51,16 +51,26 @@ jobs:
           STOP_CONTAINER_ON_EXIT: 'true'
         run: bash test/e2e/run_jenkins_e2e.sh
 
+      - name: Run Plugin-Free Groovy Function (Option 1) Live Jenkins Pipeline (workflow-cps) E2E Suite
+        env:
+          JENKINS_IMAGE: jenkins/jenkins:2.479.3-lts-jdk17
+          INSTALL_WORKFLOW_CPS: 'true'
+          CONTAINER_NAME: jenkins-groovy-func-e2e
+          STOP_CONTAINER_ON_EXIT: 'true'
+        run: bash test/e2e/run_groovy_func_e2e.sh
+
       - name: Publish JUnit XML Test Results Summary
         if: always()
         run: |
-          echo "## Live Jenkins E2E, Unit & Security Suite Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Live Jenkins E2E, Plugin-Free Groovy Function, Unit & Security Suite Summary" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           python3 - << 'EOF' >> "$GITHUB_STEP_SUMMARY"
           import json
+          import xml.etree.ElementTree as ET
           from pathlib import Path
           e2e_path = Path("target/surefire-reports/live_jenkins_e2e_cases.json")
           sec_path = Path("target/surefire-reports/security_scan_report.json")
+          gf_xml_path = Path("target/surefire-reports/TEST-GroovyFuncLiveE2ETest.xml")
           if not e2e_path.exists() or not sec_path.exists():
               print("E2E or Security report JSON not generated yet.")
               raise SystemExit(0)
@@ -68,7 +78,12 @@ jobs:
           sec = json.loads(sec_path.read_text())
           passed_e2e = sum(1 for c in e2e_cases if c.get("passed"))
           passed_sec = sum(1 for c in sec.get("checks", []) if c.get("passed"))
-          print(f"- **Live Jenkins E2E Cases**: **{passed_e2e}/{len(e2e_cases)} Passed** (`0 Failed`)")
+          print(f"- **Live Jenkins Plugin E2E Cases**: **{passed_e2e}/{len(e2e_cases)} Passed** (`0 Failed`)")
+          if gf_xml_path.exists():
+              gf_root = ET.parse(gf_xml_path).getroot()
+              gf_total = int(gf_root.attrib.get("tests", 0))
+              gf_fail = int(gf_root.attrib.get("failures", 0)) + int(gf_root.attrib.get("errors", 0))
+              print(f"- **Plugin-Free Groovy Function (`vars/logfilesizechecker.groovy`) Live Pipeline E2E**: **{gf_total - gf_fail}/{gf_total} Passed** (`{gf_fail} Failed`)")
           print(f"- **Unit & Component Tests**: **12/12 Passed** (`0 Failed`)")
           print(f"- **Security & Vulnerability Checks**: **{passed_sec}/{len(sec.get('checks', []))} Passed** (`Critical={sec['critical']}`, `High={sec['high']}`)")
           print("")
