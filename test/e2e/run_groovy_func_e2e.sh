@@ -43,8 +43,9 @@ docker exec "${CONTAINER_NAME}" bash -c '
 
     echo "[1/4] Extracting base Jenkins WAR detached plugins (WITHOUT logfilesizechecker.hpi!)..."
     cd /tmp/jenkins-war-libs
-    jar xf /usr/share/jenkins/jenkins.war WEB-INF/lib/ WEB-INF/detached-plugins/
+    jar xf /usr/share/jenkins/jenkins.war WEB-INF/lib/ WEB-INF/detached-plugins/ || jar xf /usr/share/jenkins/jenkins.war WEB-INF/lib/
     for hpi in /tmp/jenkins-war-libs/WEB-INF/detached-plugins/*.hpi; do
+        [ -e "$hpi" ] || continue
         base=$(basename "$hpi" .hpi)
         cp "$hpi" "${JENKINS_HOME}/plugins/${base}.jpi"
     done
@@ -144,7 +145,10 @@ docker exec "${CONTAINER_NAME}" bash -c '
 '
 
 docker exec -d "${CONTAINER_NAME}" bash -c '
-GROOVY_JAR=$(ls /tmp/jenkins-war-libs/WEB-INF/lib/groovy-all-*.jar | head -n 1)
+if command -v jwebserver >/dev/null 2>&1; then
+    exec jwebserver -b 0.0.0.0 -p 18081 -d /workspace/target/site/allure-report >/tmp/allure_http_18081.log 2>&1
+fi
+GROOVY_JAR=$(ls /tmp/jenkins-war-libs/WEB-INF/lib/groovy-all-*.jar /tmp/jenkins-war-libs/WEB-INF/lib/groovy-*.jar 2>/dev/null | head -n 1)
 java -cp "${GROOVY_JAR}" groovy.ui.GroovyMain -e "
 import com.sun.net.httpserver.HttpServer
 import java.net.InetSocketAddress
