@@ -1,5 +1,6 @@
 package hudson.plugins.logfilesizechecker;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -15,41 +16,45 @@ import hudson.tasks.BuildWrapperDescriptor;
 import hudson.triggers.SafeTimerTask;
 
 import java.io.IOException;
-import java.io.Serializable;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import jenkins.model.CauseOfInterruption;
+import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildWrapper;
 import jenkins.util.Timer;
 
 import net.sf.json.JSONObject;
 
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * {@link BuildWrapper} that terminates a build if its log file size is too big.
  *
  * @author Stefan Brausch
  */
-public class LogfilesizecheckerWrapper extends SimpleBuildWrapper implements Serializable {
+public class LogfilesizecheckerWrapper extends SimpleBuildWrapper {
 
-    /** Set your own max size instead of using the default.*/
-    public boolean setOwn;
+    /** Set your own max size instead of using the default. */
+    private boolean setOwn;
 
     /** If the log file for the build has more MB, it will be terminated. */
-    public int maxLogSize;
+    private int maxLogSize;
 
     /** Fail the build rather than aborting it. */
-    public boolean failBuild;
+    private boolean failBuild;
 
-    /**Delay for timer task that checks the logfile size.*/
+    /** Delay for timer task that checks the logfile size. */
     private static final long DELAY = 1;
 
-    /**Conversion factor for Mega Bytes.*/
+    /** Conversion factor for Mega Bytes. */
     private static final long MB = 1024L * 1024L;
-    
+
     /**
-     * Contructor for data binding of form data.
+     * Constructor for data binding of form data.
      * @param maxLogSize job specific maximum log size
      * @param failBuild true if the build should be marked failed instead of aborted
      * @param setOwn true if a job specific log size is set, false if global setting is used
@@ -60,7 +65,34 @@ public class LogfilesizecheckerWrapper extends SimpleBuildWrapper implements Ser
         this.failBuild = failBuild;
         this.setOwn = setOwn;
     }
-    
+
+    public int getMaxLogSize() {
+        return maxLogSize;
+    }
+
+    @DataBoundSetter
+    public void setMaxLogSize(int maxLogSize) {
+        this.maxLogSize = maxLogSize;
+    }
+
+    public boolean isFailBuild() {
+        return failBuild;
+    }
+
+    @DataBoundSetter
+    public void setFailBuild(boolean failBuild) {
+        this.failBuild = failBuild;
+    }
+
+    public boolean isSetOwn() {
+        return setOwn;
+    }
+
+    @DataBoundSetter
+    public void setSetOwn(boolean setOwn) {
+        this.setOwn = setOwn;
+    }
+
     @Override
     public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher,
             TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
@@ -75,18 +107,41 @@ public class LogfilesizecheckerWrapper extends SimpleBuildWrapper implements Ser
         if (allowedLogSize > 0) {
             LogSizeTimerTask logSizeTimerTask =
                     new LogSizeTimerTask(build, listener, allowedLogSize, failBuild);
-            Timer.get().scheduleAtFixedRate(logSizeTimerTask, DELAY,
-                    DESCRIPTOR.getCheckPeriod(), TimeUnit.SECONDS);
+            ScheduledFuture<?> future = Timer.get().scheduleAtFixedRate(
+                    logSizeTimerTask, DELAY, Math.max(1, DESCRIPTOR.getCheckPeriod()), TimeUnit.SECONDS);
+            logSizeTimerTask.setFuture(future);
             context.setDisposer(new LogSizeTimerTaskDisposer(logSizeTimerTask));
         }
     }
 
-    /**TimerTask that checks log file size in regular intervals.*/
+    /** Cause recorded on the build when terminated due to exceeding maximum log size. */
+    public static final class MaxLogSizeCause extends CauseOfInterruption {
+
+        private static final long serialVersionUID = 1L;
+        private final int maxLogSize;
+
+        public MaxLogSizeCause(int maxLogSize) {
+            this.maxLogSize = maxLogSize;
+        }
+
+        public int getMaxLogSize() {
+            return maxLogSize;
+        }
+
+        @NonNull
+        @Override
+        public String getShortDescription() {
+            return "Max Log Size reached " + maxLogSize + "(MB)";
+        }
+    }
+
+    /** TimerTask that checks log file size in regular intervals. */
     private static class LogSizeTimerTask extends SafeTimerTask {
         private final Run<?, ?> build;
         private final TaskListener listener;
         private final int allowedLogSize;
         private final boolean failBuild;
+        private volatile ScheduledFuture<?> future;
 
         /**
          * Constructor for TimerTask that checks log file size.
@@ -103,15 +158,31 @@ public class LogfilesizecheckerWrapper extends SimpleBuildWrapper implements Ser
             this.failBuild = failBuild;
         }
 
-        /**Interrupts build if log file is too big.*/
-        public void doRun() {
+        /** Interrupts build if log file is too big. */
+        @Override
+        protected void doRun() {
             if (build.getLogText().length() > allowedLogSize * MB) {
                 final Executor e = build.getExecutor();
                 if (e != null && !e.isInterrupted()) {
                     listener.getLogger().println(
-                            ">>> Max Log Size reached "+allowedLogSize+"(MB). Aborting <<<");
-                    e.interrupt(failBuild ? Result.FAILURE : Result.ABORTED);
+                            ">>> Max Log Size reached " + allowedLogSize + "(MB). Aborting <<<");
+                    e.interrupt(
+                            failBuild ? Result.FAILURE : Result.ABORTED,
+                            new MaxLogSizeCause(allowedLogSize));
+                    cancelTask();
                 }
+            }
+        }
+
+        void setFuture(ScheduledFuture<?> future) {
+            this.future = future;
+        }
+
+        void cancelTask() {
+            cancel();
+            ScheduledFuture<?> f = this.future;
+            if (f != null) {
+                f.cancel(false);
             }
         }
     }
@@ -119,7 +190,7 @@ public class LogfilesizecheckerWrapper extends SimpleBuildWrapper implements Ser
     private static class LogSizeTimerTaskDisposer extends Disposer {
 
         private static final long serialVersionUID = 204030731559819462L;
-        private transient LogSizeTimerTask logSizeTimerTask;
+        private final transient LogSizeTimerTask logSizeTimerTask;
 
         public LogSizeTimerTaskDisposer(LogSizeTimerTask logSizeTimerTask) {
             this.logSizeTimerTask = logSizeTimerTask;
@@ -130,48 +201,54 @@ public class LogfilesizecheckerWrapper extends SimpleBuildWrapper implements Ser
                 Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener)
                 throws IOException, InterruptedException {
             if (logSizeTimerTask != null) {
-                logSizeTimerTask.cancel();
+                logSizeTimerTask.cancelTask();
             }
         }
     }
-    
 
     @Override
     public Descriptor<BuildWrapper> getDescriptor() {
         return DESCRIPTOR;
     }
 
-    /**Creates descriptor for the BuildWrapper.*/
+    /** Creates descriptor for the BuildWrapper. */
     @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-    /**The Descriptor for the BuildWrapper.*/
+    /** The Descriptor for the BuildWrapper. */
+    @Symbol("logfilesizechecker")
     public static final class DescriptorImpl extends BuildWrapperDescriptor {
 
-        /**If there is no job specific size set, this will be used.*/
+        /** If there is no job specific size set, this will be used. */
         private int defaultLogSize;
 
-        /**The delay between successive checks.*/
+        /** The delay between successive checks. */
         private int checkPeriod = 1;
 
-        /**Constructor loads previously saved form data.*/
-        DescriptorImpl() {
+        /** Constructor loads previously saved form data. */
+        public DescriptorImpl() {
             super(LogfilesizecheckerWrapper.class);
-            load();
+            if (Jenkins.getInstanceOrNull() != null) {
+                load();
+            }
         }
 
         /**
          * Returns caption for our part of the config page.
          * @return caption
          */
+        @NonNull
+        @Override
         public String getDisplayName() {
             return Messages.Descriptor_DisplayName();
         }
 
-        /**Certainly does something.
-         * @param item Some item, I guess
+        /**
+         * Indicates whether this build wrapper is applicable to the given project.
+         * @param item project to check
          * @return true
          */
+        @Override
         public boolean isApplicable(AbstractProject<?, ?> item) {
             return true;
         }
@@ -185,11 +262,12 @@ public class LogfilesizecheckerWrapper extends SimpleBuildWrapper implements Ser
         }
 
         /**
-         * Allows changing the global log file size - used for testing only.
+         * Allows changing the global log file size.
          * @param size new default max log size
          */
+        @DataBoundSetter
         public void setDefaultLogSize(int size) {
-            defaultLogSize = size;
+            defaultLogSize = Math.max(0, size);
         }
 
         /**
@@ -201,20 +279,37 @@ public class LogfilesizecheckerWrapper extends SimpleBuildWrapper implements Ser
         }
 
         /**
-         * 
-         * 
-         * {@inheritDoc}
+         * Allows changing the period, in seconds, between successive checks.
+         * @param period check frequency in seconds (minimum 1)
          */
-        public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
-            final String size = formData.getString("defaultLogSize");
-            final String delay = formData.getString("checkPeriod");
-
-            defaultLogSize = size != null ? Integer.parseInt(size) : 0;
-            checkPeriod = delay != null ? Integer.parseInt(delay) : 1;
-            save();
-            return super.configure(req, formData);
+        @DataBoundSetter
+        public void setCheckPeriod(int period) {
+            checkPeriod = Math.max(1, period);
         }
 
-       
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean configure(StaplerRequest2 req, JSONObject formData) throws FormException {
+            final String size = formData.optString("defaultLogSize", null);
+            final String delay = formData.optString("checkPeriod", null);
+
+            setDefaultLogSize(parseIntOrDefault(size, 0));
+            setCheckPeriod(parseIntOrDefault(delay, 1));
+            save();
+            return req != null ? super.configure(req, formData) : true;
+        }
+
+        private static int parseIntOrDefault(String value, int defaultValue) {
+            if (value == null || value.trim().isEmpty()) {
+                return defaultValue;
+            }
+            try {
+                return Integer.parseInt(value.trim());
+            } catch (NumberFormatException e) {
+                return defaultValue;
+            }
+        }
     }
 }

@@ -4,13 +4,13 @@
     <f:entry title="${%Use job specific size}" description="${%Use job specific maximum log size instead global value} (${descriptor.getDefaultLogSize()} MB)" field="setOwn">
         <f:checkbox/>
     </f:entry>
- 
+
     <f:entry title="${%Job specific size}" description="${%Job specific max log size in MB}" field="maxLogSize">
-            <f:textbox/>
+        <f:number clazz="number" min="0" step="1"/>
     </f:entry>
-    
-	<f:entry title="${%Fail the build}" field="failBuild">
-    	<f:checkbox/>
-	</f:entry>
+
+    <f:entry title="${%Fail the build}" field="failBuild">
+        <f:checkbox/>
+    </f:entry>
 
 </j:jelly>
