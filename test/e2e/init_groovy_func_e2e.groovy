@@ -185,6 +185,11 @@ class GroovyFuncE2ESuiteRunnerBuilder extends Builder {
                 def wfJob = j.createProject(wfJobClass, jobName)
                 wfJob.setDescription(desc)
                 def flowDef = cpsDefClass.getConstructor(String.class, boolean.class).newInstance(scriptText, sandbox)
+                if (!sandbox) {
+                    def sa = cl.loadClass("org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval").getMethod("get").invoke(null)
+                    def groovyLang = cl.loadClass("org.jenkinsci.plugins.scriptsecurity.scripts.languages.GroovyLanguage").getMethod("get").invoke(null)
+                    sa.preapprove(scriptText, groovyLang)
+                }
                 wfJob.setDefinition(flowDef)
                 wfJob.save()
                 long startMs = System.currentTimeMillis()
