@@ -15,7 +15,6 @@ echo "  Install CPS      : ${INSTALL_WORKFLOW_CPS}"
 echo "=================================================================="
 
 mkdir -p "${PROJECT_DIR}/target/surefire-reports" "${PROJECT_DIR}/target/site/allure-report/assets"
-chmod -R 777 "${PROJECT_DIR}/target"
 
 docker rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
 
@@ -32,6 +31,8 @@ docker run -d \
     --entrypoint bash \
     "${JENKINS_IMAGE}" \
     -c "sleep infinity" >/dev/null
+
+docker exec -u 0 "${CONTAINER_NAME}" chmod -R 777 /workspace/target
 
 docker exec "${CONTAINER_NAME}" bash -c '
     set -euo pipefail
@@ -132,6 +133,8 @@ docker exec "${CONTAINER_NAME}" bash -c '
         cp -f "${BOOTSTRAP_CSS}" /workspace/target/site/allure-report/assets/bootstrap.min.css
     fi
 '
+
+docker exec -u 0 "${CONTAINER_NAME}" chmod -R 777 /workspace/target
 
 python3 "${PROJECT_DIR}/test/e2e/generate_allure_dashboard.py"
 
