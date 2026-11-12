@@ -54,7 +54,7 @@ docker exec "${CONTAINER_NAME}" bash -c '
         jenkins-plugin-cli \
             --war /usr/share/jenkins/jenkins.war \
             --plugin-download-directory "${JENKINS_HOME}/plugins" \
-            --plugins workflow-job workflow-cps workflow-durable-task-step workflow-basic-steps pipeline-groovy-lib git
+            --plugins workflow-job workflow-cps workflow-durable-task-step workflow-basic-steps pipeline-groovy-lib git junit
     fi
 
     # Verify logfilesizechecker plugin is NOT present in plugins directory

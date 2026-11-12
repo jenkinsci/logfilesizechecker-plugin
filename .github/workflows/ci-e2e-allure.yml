@@ -53,7 +53,7 @@ jobs:
 
       - name: Run Plugin-Free Groovy Function (Option 1) Live Jenkins Pipeline (workflow-cps) E2E Suite
         env:
-          JENKINS_IMAGE: jenkins/jenkins:2.479.3-lts-jdk17
+          JENKINS_IMAGE: jenkins/jenkins:lts-jdk21
           INSTALL_WORKFLOW_CPS: 'true'
           CONTAINER_NAME: jenkins-groovy-func-e2e
           STOP_CONTAINER_ON_EXIT: 'true'
